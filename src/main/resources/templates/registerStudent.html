@@ -1,42 +1,99 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+  <meta charset="UTF-8">
   <title>受講生登録</title>
+
+  <script>
+    // 行追加
+    function addCourseRow() {
+        const table = document.getElementById("courseTable");
+        const newRow = table.insertRow(-1);
+
+        const courseCell = newRow.insertCell(0);
+        const dateCell = newRow.insertCell(1);
+
+        courseCell.innerHTML =
+            '<input type="text" name="courseNames" placeholder="コース名を入力">';
+
+        dateCell.innerHTML =
+            '<input type="text" name="startDates" placeholder="開始日(YYYY-MM-DD)">';
+    }
+  </script>
 </head>
+
 <body>
+
 <h1>受講生登録</h1>
+
 <form th:action="@{/registerStudent}" th:object="${studentDetail}" method="post">
+
   <div>
-    <label for="fullName">名前:</label>
-    <input type="text" id="fullName" th:field="*{student.fullName}" required />
+    <label for="fullname">名前:</label>
+    <input type="text" id="fullname" th:field="*{student.fullName}" required />
   </div>
+
   <div>
     <label for="furigana">フリガナ:</label>
     <input type="text" id="furigana" th:field="*{student.furigana}" required />
   </div>
+
   <div>
     <label for="nickname">ニックネーム:</label>
     <input type="text" id="nickname" th:field="*{student.nickname}" required />
   </div>
+
   <div>
     <label for="region">地域:</label>
     <input type="text" id="region" th:field="*{student.region}" required />
   </div>
+
   <div>
-  <label for="age">年齢:</label>
-  <input type="text" id="age" th:field="*{student.age}" required />
-</div>
+    <label for="age">年齢:</label>
+    <input type="text" id="age" th:field="*{student.age}" required />
+  </div>
+
   <div>
     <label for="gender">性別:</label>
     <input type="text" id="gender" th:field="*{student.gender}" required />
   </div>
+
   <div>
     <label for="remark">備考:</label>
     <input type="text" id="remark" th:field="*{student.remark}" required />
   </div>
+
+  <!-- ▼ 受講コース：複数行＋開始日付き -->
+  <h3>受講コース（複数追加できます）</h3>
+
+  <table id="courseTable" border="0">
+    <tr>
+      <th>コース名</th>
+      <th>開始日</th>
+    </tr>
+
+    <!-- 最初の1行（空欄） -->
+    <tr>
+      <td>
+        <input type="text" name="courseNames" placeholder="コース名を入力">
+      </td>
+      <td>
+        <input type="text" name="startDates" placeholder="開始日(YYYY-MM-DD)">
+      </td>
+    </tr>
+
+  </table>
+
+  <button type="button" onclick="addCourseRow()">＋ 行を追加</button>
+  <!-- ▲ 受講コース -->
+
+  <br><br>
+
   <div>
     <button type="submit">登録</button>
   </div>
+
 </form>
+
 </body>
 </html>

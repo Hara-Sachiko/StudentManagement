@@ -10,7 +10,9 @@ import raisetech.StudentManagement.data.StudentCourse;
 @Setter
 public class StudentDetail {
 
-  private Student student;
-  private List<StudentCourse> studentCourses;
-
+  private Student student;                // 生徒情報
+  private List<StudentCourse> studentCourse; // 登録済み・既存コース情報
+  private List<Integer> courseIds;        // フォームで選択されたコースID
+  private List<String> courseStartDates;  // 選択されたコースの開始日
+  private String newCourseName;           // 新規追加コース用
 }

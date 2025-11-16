@@ -7,6 +7,7 @@ import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.repository.StudentRepository;
 import raisetech.StudentManagement.etc.StudentWithCourse;
 
+
 @Service
 public class StudentService {
 
@@ -47,8 +48,27 @@ public class StudentService {
     return repository.findStudentsInJavaCourse(courseName);
   }
 
-  // 新規登録処理
+  // Student登録
   public void registerStudent(Student student) {
     repository.insertStudent(student);
+  }
+
+  // コース登録（名前ベース、複数コース対応）
+  public void registerStudentCoursesWithStartDateByName(
+      int studentId,
+      List<String> courseNames,
+      List<String> startDates
+  ) {
+    if (courseNames.size() != startDates.size()) {
+      throw new IllegalArgumentException("courseNames と startDates の件数が一致していません");
+    }
+
+    for (int i = 0; i < courseNames.size(); i++) {
+      repository.insertStudentCourseWithStartDate(
+          studentId,
+          courseNames.get(i),
+          startDates.get(i)
+      );
+    }
   }
 }

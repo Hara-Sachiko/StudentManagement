@@ -1,23 +1,20 @@
 package raisetech.StudentManagement.controller;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 import raisetech.StudentManagement.controller.converter.StudentConverter;
 import raisetech.StudentManagement.data.Student;
-import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.service.StudentService;
+import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.etc.StudentWithCourse;
-import org.springframework.ui.Model;
 
 @Controller
 public class StudentController {
@@ -31,6 +28,7 @@ public class StudentController {
     this.converter = converter;
   }
 
+  // 一覧表示
   @GetMapping("/students")
   public String getAllStudents(Model model) {
     List<Student> students = service.getAllStudents();
@@ -40,50 +38,37 @@ public class StudentController {
     return "studentList";
   }
 
-
-  @GetMapping("/students/search")
-  public List<Student> searchStudents(@RequestParam(required = false) String namePattern) {
-    return service.searchStudents(namePattern);
-  }
-
-  @GetMapping("/courses")
-  public List<StudentCourse> getAllCourses() {
-    return service.getAllCourses();
-  }
-
-  @GetMapping("/courses/search")
-  public List<StudentCourse> searchCourses(@RequestParam(required = false) String coursePattern) {
-    return service.searchCourses(coursePattern);
-  }
-
-  @GetMapping("/students/30s")
-  public List<Student> getStudentsIn30s() {
-    return service.getStudentsIn30s();
-  }
-
-  @GetMapping("/students/java")
-  public List<StudentWithCourse> getStudentsInJavaCourse() {
-    return service.getStudentsInJavaCourse("Javaコース"); // ←固定値
-  }
-
+  // 新規登録画面表示
   @GetMapping("/newStudent")
-  public String newStudent(Model model){
+  public String newStudent(Model model) {
+
     StudentDetail detail = new StudentDetail();
-    detail.setStudent(new Student());
-    model.addAttribute("studentDetail", new StudentDetail());
+    detail.setStudent(new Student());   // 中身は空でOK
+
+    model.addAttribute("studentDetail", detail);
     return "registerStudent";
   }
 
+  // 登録処理（コース名 + 開始日を RequestParam で受け取る）
   @PostMapping("/registerStudent")
-  public String registerStudent(@ModelAttribute StudentDetail studentDetail, BindingResult result) {
+  public String registerStudent(
+      @ModelAttribute StudentDetail studentDetail,
+      BindingResult result,
+      @RequestParam List<String> courseNames,
+      @RequestParam List<String> startDates
+  ) {
+
     if (result.hasErrors()) {
       return "registerStudent";
     }
 
-    // ★ 登録処理呼び出し
-    studentService.registerStudent(studentDetail.getStudent());
+    // 1. Student 登録
+    service.registerStudent(studentDetail.getStudent());
+    int studentId = studentDetail.getStudent().getId();
 
-    // 登録完了後、一覧画面へリダイレクト
+    // 2. コース登録（コース名 + 開始日）
+    service.registerStudentCoursesWithStartDateByName(studentId, courseNames, startDates);
+
     return "redirect:/students";
   }
 }
