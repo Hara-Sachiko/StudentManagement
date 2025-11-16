@@ -7,6 +7,7 @@ import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.etc.StudentWithCourse;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Insert;
 
 @Mapper
 public interface StudentRepository {
@@ -75,4 +76,30 @@ public interface StudentRepository {
         WHERE c.course_name = #{courseName}
     """)
   List<StudentWithCourse> findStudentsInJavaCourse(@Param("courseName") String courseName);
+
+  // -----------------------
+  // 生徒登録処理
+  // -----------------------
+  @Insert("""
+      INSERT INTO students (
+          full_name,
+          furigana,
+          nickname,
+          region,
+          age,
+          gender,
+          remark,
+          is_deleted
+      ) VALUES (
+          #{fullName},
+          #{furigana},
+          #{nickname},
+          #{region},
+          #{age},
+          #{gender},
+          #{remark},
+          false
+      )
+      """)
+  void insertStudent(Student student);
 }

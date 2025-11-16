@@ -46,4 +46,9 @@ public class StudentService {
   public List<StudentWithCourse> getStudentsInJavaCourse(String courseName) {
     return repository.findStudentsInJavaCourse(courseName);
   }
+
+  // 新規登録処理
+  public void registerStudent(Student student) {
+    repository.insertStudent(student);
+  }
 }
