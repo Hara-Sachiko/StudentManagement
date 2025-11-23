@@ -8,6 +8,7 @@ import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.etc.StudentWithCourse;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 
 @Mapper
 public interface StudentRepository {
@@ -48,15 +49,15 @@ public interface StudentRepository {
   // JOIN検索
   // -----------------------
   @Select("""
-        SELECT s.id AS studentId,
-               s.full_name AS studentName,
-               s.age,
-               c.course_name AS courseName
-        FROM students s
-        LEFT JOIN students_courses c ON s.id = c.student_id
-        WHERE s.full_name REGEXP #{namePattern}
-           OR c.course_name REGEXP #{coursePattern}
-    """)
+          SELECT s.id AS studentId,
+                 s.full_name AS studentName,
+                 s.age,
+                 c.course_name AS courseName
+          FROM students s
+          LEFT JOIN students_courses c ON s.id = c.student_id
+          WHERE s.full_name REGEXP #{namePattern}
+             OR c.course_name REGEXP #{coursePattern}
+      """)
   List<StudentWithCourse> searchStudentsWithCourses(String namePattern, String coursePattern);
 
   // 年齢が30〜39歳の生徒を取得
@@ -67,39 +68,59 @@ public interface StudentRepository {
 
   // Javaコースを受講している生徒を取得（引数付き）
   @Select("""
-        SELECT s.id AS studentId,
-               s.full_name AS studentName,
-               s.age,
-               c.course_name AS courseName
-        FROM students s
-        INNER JOIN students_courses c ON s.id = c.student_id
-        WHERE c.course_name = #{courseName}
-    """)
+          SELECT s.id AS studentId,
+                 s.full_name AS studentName,
+                 s.age,
+                 c.course_name AS courseName
+          FROM students s
+          INNER JOIN students_courses c ON s.id = c.student_id
+          WHERE c.course_name = #{courseName}
+      """)
   List<StudentWithCourse> findStudentsInJavaCourse(@Param("courseName") String courseName);
 
   // -----------------------
   // 生徒登録処理
   // -----------------------
   @Insert("""
-      INSERT INTO students (
-          full_name,
-          furigana,
-          nickname,
-          region,
-          age,
-          gender,
-          remark,
-          is_deleted
-      ) VALUES (
-          #{fullName},
-          #{furigana},
-          #{nickname},
-          #{region},
-          #{age},
-          #{gender},
-          #{remark},
-          false
-      )
-      """)
+        INSERT INTO students (
+            full_name,
+            furigana,
+            nickname,
+            region,
+            age,
+            gender,
+            remark,
+            is_deleted
+        ) VALUES (
+            #{fullName},
+            #{furigana},
+            #{nickname},
+            #{region},
+            #{age},
+            #{gender},
+            #{remark},
+            false
+        )
+    """)
+  @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
   void insertStudent(Student student);
+  // -----------------------
+  // 新規追加：StudentCourse 登録（開始日付き）
+  // -----------------------
+  @Insert("""
+        INSERT INTO students_courses (
+            student_id,
+            course_name,
+            start_date
+        ) VALUES (
+            #{studentId},
+            #{courseName},
+            #{startDate}
+        )
+    """)
+  void insertStudentCourseWithStartDate(
+      @Param("studentId") int studentId,
+      @Param("courseName") String courseName,
+      @Param("startDate") String startDate
+  );
 }
