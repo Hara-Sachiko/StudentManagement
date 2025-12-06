@@ -9,9 +9,18 @@ import raisetech.StudentManagement.etc.StudentWithCourse;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.Delete;
 
 @Mapper
 public interface StudentRepository {
+
+  @Select("SELECT * FROM students WHERE id = #{id}")
+  Student searchStudent(String id);
+
+  @Select("SELECT * FROM students_courses WHERE student_id = #{studentid}")
+  List<StudentCourse> searchStudentsCourses(String studentid);
+
 
   // -----------------------
   // students テーブル
@@ -33,13 +42,13 @@ public interface StudentRepository {
   // students_courses テーブル
   // -----------------------
   @Select("""
-      SELECT id, student_id AS studentId, course_name AS courseName, start_date AS startDate, end_date AS endDate
+      SELECT id, student_id AS studentId, course_name AS courseName, course_start_at AS startDate, course_end_at AS endDate
       FROM students_courses
       """)
   List<StudentCourse> findAllCourses();
 
   @Select("""
-      SELECT id, student_id AS studentId, course_name AS courseName, start_date AS startDate, end_date AS endDate
+      SELECT id, student_id AS studentId, course_name AS courseName, course_start_at AS startDate, course_end_at AS endDate
       FROM students_courses 
       WHERE course_name REGEXP #{coursePattern}
       """)
@@ -82,45 +91,97 @@ public interface StudentRepository {
   // 生徒登録処理
   // -----------------------
   @Insert("""
-        INSERT INTO students (
-            full_name,
-            furigana,
-            nickname,
-            region,
-            age,
-            gender,
-            remark,
-            is_deleted
-        ) VALUES (
-            #{fullName},
-            #{furigana},
-            #{nickname},
-            #{region},
-            #{age},
-            #{gender},
-            #{remark},
-            false
-        )
-    """)
+          INSERT INTO students (
+              full_name,
+              furigana,
+              nickname,
+              region,
+              age,
+              gender,
+              remark,
+              is_deleted
+          ) VALUES (
+              #{fullName},
+              #{furigana},
+              #{nickname},
+              #{region},
+              #{age},
+              #{gender},
+              #{remark},
+              false
+          )
+      """)
   @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
   void insertStudent(Student student);
+
   // -----------------------
   // 新規追加：StudentCourse 登録（開始日付き）
   // -----------------------
   @Insert("""
-        INSERT INTO students_courses (
-            student_id,
-            course_name,
-            start_date
-        ) VALUES (
-            #{studentId},
-            #{courseName},
-            #{startDate}
-        )
-    """)
-  void insertStudentCourseWithStartDate(
-      @Param("studentId") int studentId,
-      @Param("courseName") String courseName,
-      @Param("startDate") String startDate
-  );
+            INSERT INTO students_courses (
+                student_id,
+                course_name,
+                course_start_at,
+                course_end_at
+            ) VALUES (
+                #{studentId},
+                #{courseName},
+                #{courseStartAt},
+                #{courseEndAt}
+            )
+      """)
+  @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
+  void insertStudentCourse(StudentCourse course);
+
+  @Select("""
+      SELECT 
+          id,
+          full_name AS fullName,
+          furigana,
+          nickname,
+          region,
+          age,
+          gender,
+          remark
+      FROM students
+      WHERE id = #{id}
+      """)
+  Student findStudentById(int id);
+
+
+  @Select("""
+      SELECT 
+          id,
+          student_id AS studentId,
+          course_name AS courseName,
+          course_start_at AS courseStartAt,
+          course_end_at AS courseEndAt
+      FROM students_courses
+      WHERE student_id = #{studentId}
+      """)
+  List<StudentCourse> findCoursesByStudentId(int studentId);
+
+
+  // 学生情報更新
+  @Update("""
+          UPDATE students SET
+              full_name = #{fullName},
+              furigana = #{furigana},
+              nickname = #{nickname},
+              region = #{region},
+              age = #{age},
+              gender = #{gender},
+              remark = #{remark},
+              is_deleted = #{isDeleted}
+          WHERE id = #{id}
+      """)
+  void updateStudentInfo(Student student);
+
+  // コース情報更新
+  @Update("""
+         UPDATE students_courses SET
+           course_name = #{courseName}
+         WHERE id = #{id}
+      """)
+  void updateStudentCourse(StudentCourse course);
 }
