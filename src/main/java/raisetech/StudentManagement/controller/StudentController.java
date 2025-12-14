@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import raisetech.StudentManagement.controller.converter.StudentConverter;
@@ -14,7 +15,7 @@ import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.service.StudentService;
 import raisetech.StudentManagement.data.StudentCourse;
-import raisetech.StudentManagement.etc.StudentWithCourse;
+import java.time.LocalDate;
 
 @Controller
 public class StudentController {
@@ -38,37 +39,53 @@ public class StudentController {
     return "studentList";
   }
 
-  // 新規登録画面表示
+  // 新規登録画面
   @GetMapping("/newStudent")
   public String newStudent(Model model) {
-
     StudentDetail detail = new StudentDetail();
-    detail.setStudent(new Student());   // 中身は空でOK
-
+    detail.setStudent(new Student());
     model.addAttribute("studentDetail", detail);
     return "registerStudent";
   }
 
-  // 登録処理（コース名 + 開始日を RequestParam で受け取る）
+  @GetMapping("/student/{id}")
+  public String getStudent(@PathVariable int id, Model model) {
+    StudentDetail detail = service.searchStudent(id);
+    model.addAttribute("studentDetail", detail);
+    return "updateStudent";
+  }
+
+  // 新規登録処理
   @PostMapping("/registerStudent")
-  public String registerStudent(
-      @ModelAttribute StudentDetail studentDetail,
-      BindingResult result,
-      @RequestParam List<String> courseNames,
-      @RequestParam List<String> startDates
-  ) {
+  public String registerStudent(@ModelAttribute StudentDetail studentDetail, BindingResult result) {
 
     if (result.hasErrors()) {
       return "registerStudent";
     }
 
-    // 1. Student 登録
-    service.registerStudent(studentDetail.getStudent());
-    int studentId = studentDetail.getStudent().getId();
+    LocalDate today = LocalDate.now();
 
-    // 2. コース登録（コース名 + 開始日）
-    service.registerStudentCoursesWithStartDateByName(studentId, courseNames, startDates);
+    for (StudentCourse course : studentDetail.getStudentCourses()) {
+      course.setCourseStartAt(today.toString());
+      course.setCourseEndAt(today.plusMonths(6).toString());
+    }
+
+    service.registerStudentWithCourses(
+        studentDetail.getStudent(),
+        studentDetail.getStudentCourses());
 
     return "redirect:/students";
+  }
+
+
+
+  @PostMapping("/updateStudent")
+  public String updateStudent(@ModelAttribute StudentDetail studentDetail, BindingResult result) {
+
+    if (result.hasErrors()) {
+      return "updateStudent";
+    }
+    service.updateStudent(studentDetail);
+    return "redirect:/students" ;
   }
 }

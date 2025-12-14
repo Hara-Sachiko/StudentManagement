@@ -60,40 +60,39 @@
 
   <div>
     <label for="remark">備考:</label>
-    <input type="text" id="remark" th:field="*{student.remark}" required />
+    <input type="text" id="remark" th:field="*{student.remark}"/>
   </div>
 
-  <!-- ▼ 受講コース：複数行＋開始日付き -->
+  <!-- 受講コース -->
   <h3>受講コース（複数追加できます）</h3>
-
   <table id="courseTable" border="0">
     <tr>
       <th>コース名</th>
-      <th>開始日</th>
     </tr>
 
-    <!-- 最初の1行（空欄） -->
     <tr>
       <td>
-        <input type="text" name="courseNames" placeholder="コース名を入力">
-      </td>
-      <td>
-        <input type="text" name="startDates" placeholder="開始日(YYYY-MM-DD)">
+        <input type="text" th:field="*{studentCourses[0].courseName}" placeholder="コース名を入力">
       </td>
     </tr>
-
   </table>
 
   <button type="button" onclick="addCourseRow()">＋ 行を追加</button>
-  <!-- ▲ 受講コース -->
 
   <br><br>
-
   <div>
     <button type="submit">登録</button>
   </div>
 
 </form>
 
-</body>
-</html>
+<script>
+  let courseIndex = 1; // 0は最初の行
+  function addCourseRow() {
+      const table = document.getElementById("courseTable");
+      const newRow = table.insertRow(-1);
+      const cell = newRow.insertCell(0);
+      cell.innerHTML = `<input type="text" name="studentCourses[${courseIndex}].courseName" placeholder="コース名を入力">`;
+      courseIndex++;
+  }
+</script>
