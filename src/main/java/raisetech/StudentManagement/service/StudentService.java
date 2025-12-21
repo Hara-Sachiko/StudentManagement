@@ -21,20 +21,15 @@ public class StudentService {
     this.repository = repository;
   }
 
-  // -----------------------
   // 学生一覧取得
-  // -----------------------
   public List<Student> getAllStudents() {
     return repository.findAllStudents();
   }
 
-  // -----------------------
   // 学生検索（詳細＋コース）
-  // -----------------------
   public StudentDetail searchStudent(int studentId){
     Student student = repository.findStudentById(studentId);
 
-    // null が返る可能性があるので対策
     List<StudentCourse> studentsCourses =
         repository.findCoursesByStudentId(studentId);
 
@@ -49,16 +44,12 @@ public class StudentService {
     return studentDetail;
   }
 
-  // -----------------------
   // コース一覧取得
-  // -----------------------
   public List<StudentCourse> getAllCourses() {
     return repository.findAllCourses();
   }
 
-  // -----------------------
   // 名前検索
-  // -----------------------
   public List<Student> searchStudents(String namePattern) {
     if (namePattern == null || namePattern.isEmpty()) {
       return repository.findAllStudents();
@@ -66,9 +57,7 @@ public class StudentService {
     return repository.findStudentsByNamePattern(namePattern);
   }
 
-  // -----------------------
   // コース検索
-  // -----------------------
   public List<StudentCourse> searchCourses(String coursePattern) {
     if (coursePattern == null || coursePattern.isEmpty()) {
       return repository.findAllCourses();
@@ -76,33 +65,25 @@ public class StudentService {
     return repository.findCoursesByNamePattern(coursePattern);
   }
 
-  // -----------------------
   // 年齢が30代の生徒リスト
-  // -----------------------
   public List<Student> getStudentsIn30s() {
     return repository.findStudentsIn30s();
   }
 
-  // -----------------------
   // Javaコース受講者リスト
-  // -----------------------
   public List<StudentWithCourse> getStudentsInJavaCourse(String courseName) {
     return repository.findStudentsInJavaCourse(courseName);
   }
 
-  // -----------------------
-  // 学生登録 + コース登録（開始日と終了日自動セット）
-  // -----------------------
+  // 学生登録 + コース登録
   @Transactional
   public Student registerStudentWithCourses(Student student, List<StudentCourse> courses) {
 
-    // 1. 学生を登録（IDセットされる）
     repository.insertStudent(student);
     int generatedStudentId = student.getId();
 
     LocalDate today = LocalDate.now();
 
-    // 2. コース登録
     for (StudentCourse course : courses) {
       course.setStudentId(generatedStudentId);
       course.setCourseStartAt(today.toString());
@@ -113,9 +94,7 @@ public class StudentService {
     return student;
   }
 
-  // -----------------------
   // 受講生詳細取得
-  // -----------------------
   public StudentDetail findStudentDetail(int studentId) {
     Student student = repository.findStudentById(studentId);
     List<StudentCourse> courses = repository.findCoursesByStudentId(studentId);
@@ -126,15 +105,11 @@ public class StudentService {
     return detail;
   }
 
-  // -----------------------
   // 学生＋コース更新
-  // -----------------------
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
-    // 学生情報更新
     repository.updateStudentInfo(studentDetail.getStudent());
 
-    // コース情報更新
     for (StudentCourse course : studentDetail.getStudentCourses()) {
       repository.updateStudentCourse(course);
     }

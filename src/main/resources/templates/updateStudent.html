@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>受講生更新</title>
+  <title>受講生詳細</title>
 </head>
 <body>
 
-<h1>受講生更新</h1>
+<h1>受講生詳細</h1>
 
 <form th:action="@{/updateStudent}" th:object="${studentDetail}" method="post">
 
@@ -40,12 +40,22 @@
 
   <div>
     <label>性別：</label>
-    <input type="text" th:field="*{student.gender}" />
+    <select th:field="*{student.gender}">
+      <option value="">選択してください</option>
+      <option value="男"  th:selected="${studentDetail.student.gender == '男'}">男性</option>
+      <option value="女"  th:selected="${studentDetail.student.gender == '女'}">女性</option>
+      <option value="その他" th:selected="${studentDetail.student.gender == 'その他'}">その他</option>
+    </select>
   </div>
 
   <div>
     <label>備考：</label>
     <input type="text" th:field="*{student.remark}" />
+  </div>
+
+  <div>
+    <label>キャンセル：</label>
+    <input type="checkbox" th:field="*{student.deleted}" />
   </div>
 
   <hr>
