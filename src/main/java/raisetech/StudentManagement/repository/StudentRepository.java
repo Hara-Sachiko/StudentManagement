@@ -61,6 +61,7 @@ public interface StudentRepository {
                 remark,
                 is_deleted AS isDeleted
             FROM students
+            WHERE is_deleted = false
             """)
   List<Student> findAllStudents();
 
@@ -78,6 +79,7 @@ public interface StudentRepository {
                 is_deleted AS isDeleted
             FROM students
             WHERE full_name REGEXP #{namePattern}
+            AND is_deleted = false
             """)
   List<Student> findStudentsByNamePattern(String namePattern);
 
@@ -96,6 +98,7 @@ public interface StudentRepository {
                 is_deleted AS isDeleted
             FROM students
             WHERE age BETWEEN 30 AND 39
+            AND is_deleted = false
             """)
   List<Student> findStudentsIn30s();
 
