@@ -4,29 +4,14 @@
   <meta charset="UTF-8">
   <title>受講生登録</title>
 
-  <script>
-    // 行追加
-    function addCourseRow() {
-        const table = document.getElementById("courseTable");
-        const newRow = table.insertRow(-1);
 
-        const courseCell = newRow.insertCell(0);
-        const dateCell = newRow.insertCell(1);
-
-        courseCell.innerHTML =
-            '<input type="text" name="courseNames" placeholder="コース名を入力">';
-
-        dateCell.innerHTML =
-            '<input type="text" name="startDates" placeholder="開始日(YYYY-MM-DD)">';
-    }
-  </script>
 </head>
 
 <body>
 
 <h1>受講生登録</h1>
 
-<form th:action="@{/registerStudent}" th:object="${studentDetail}" method="post">
+<form th:action="@{/students/register}" th:object="${studentDetail}" method="post">
 
   <div>
     <label for="fullname">名前:</label>
@@ -50,7 +35,7 @@
 
   <div>
     <label for="age">年齢:</label>
-    <input type="text" id="age" th:field="*{student.age}" required />
+    <input type="number" id="age" th:field="*{student.age}" required />
   </div>
 
   <div>
@@ -97,7 +82,11 @@
       const table = document.getElementById("courseTable");
       const newRow = table.insertRow(-1);
       const cell = newRow.insertCell(0);
-      cell.innerHTML = `<input type="text" name="studentCourses[${courseIndex}].courseName" placeholder="コース名を入力">`;
-      courseIndex++;
+      cell.innerHTML = `
+  <input type="text"
+         name="studentCourses[${courseIndex}].courseName"
+         placeholder="コース名を入力">
+`;
+ courseIndex++;
   }
 </script>

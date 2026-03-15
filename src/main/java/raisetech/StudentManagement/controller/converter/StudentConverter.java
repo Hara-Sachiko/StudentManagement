@@ -1,9 +1,11 @@
 package raisetech.StudentManagement.controller.converter;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
+
 import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
@@ -11,19 +13,32 @@ import raisetech.StudentManagement.domain.StudentDetail;
 @Component
 public class StudentConverter {
 
-  public List<StudentDetail> convertStudentDetails(List<Student> students,
+  /**
+   * Student + StudentCourse を StudentDetail に変換
+   */
+  public List<StudentDetail> convertStudentDetails(
+      List<Student> students,
       List<StudentCourse> studentCourses) {
-    List<StudentDetail> studentDetails = new ArrayList<>();
-    students.forEach(student -> {
-      StudentDetail studentDetail = new StudentDetail();
-      studentDetail.setStudent(student);
 
-      List<StudentCourse> convertStudentCourses = studentCourses.stream()
-          .filter(studentCourse -> student.getId() == studentCourse.getStudentId())
-          .collect(Collectors.toList());
-      studentDetail.setStudentCourses(convertStudentCourses);
-      studentDetails.add(studentDetail);
-    });
-    return studentDetails;
+    // studentIdごとにコースをまとめる
+    Map<Integer, List<StudentCourse>> courseMap =
+        studentCourses.stream()
+            .collect(Collectors.groupingBy(StudentCourse::getStudentId));
+
+    return students.stream()
+        .map(student -> {
+
+          StudentDetail detail = new StudentDetail();
+          detail.setStudent(student);
+
+          List<StudentCourse> courses =
+              courseMap.getOrDefault(student.getId(), List.of());
+
+          detail.setStudentCourses(courses);
+
+          return detail;
+
+        })
+        .toList();
   }
 }
