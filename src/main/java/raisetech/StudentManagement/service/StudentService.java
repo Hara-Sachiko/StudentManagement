@@ -1,114 +1,108 @@
 package raisetech.StudentManagement.service;
 
+import java.time.LocalDate;
 import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
 
+import raisetech.StudentManagement.controller.converter.StudentConverter;
 import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
-import raisetech.StudentManagement.repository.StudentRepository;
-import raisetech.StudentManagement.etc.StudentWithCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
-import java.util.ArrayList;
+import raisetech.StudentManagement.repository.StudentRepository;
 
 @Service
 public class StudentService {
 
   private final StudentRepository repository;
+  private final StudentConverter converter;
 
-  public StudentService(StudentRepository repository) {
+  public StudentService(StudentRepository repository, StudentConverter converter) {
     this.repository = repository;
+    this.converter = converter;
   }
 
-  // 学生一覧取得
-  public List<Student> getAllStudents() {
-    return repository.findAllStudents();
+  /**
+   * 受講生一覧取得
+   */
+  public List<StudentDetail> searchStudentList() {
+
+    List<Student> students = repository.findAllStudents();
+    List<StudentCourse> courses = repository.findAllCourses();
+
+    return converter.convertStudentDetails(students, courses);
   }
 
-  // 学生検索（詳細＋コース）
-  public StudentDetail searchStudent(int studentId){
-    Student student = repository.findStudentById(studentId);
+  /**
+   * 受講生詳細取得
+   */
+  public StudentDetail searchStudent(int studentId) {
 
-    List<StudentCourse> studentsCourses =
-        repository.findCoursesByStudentId(studentId);
-
-    if (studentsCourses == null) {
-      studentsCourses = new ArrayList<>();
-    }
-
-    StudentDetail studentDetail = new StudentDetail();
-    studentDetail.setStudent(student);
-    studentDetail.setStudentCourses(studentsCourses);
-
-    return studentDetail;
-  }
-
-  // コース一覧取得
-  public List<StudentCourse> getAllCourses() {
-    return repository.findAllCourses();
-  }
-
-  // 名前検索
-  public List<Student> searchStudents(String namePattern) {
-    if (namePattern == null || namePattern.isEmpty()) {
-      return repository.findAllStudents();
-    }
-    return repository.findStudentsByNamePattern(namePattern);
-  }
-
-  // コース検索
-  public List<StudentCourse> searchCourses(String coursePattern) {
-    if (coursePattern == null || coursePattern.isEmpty()) {
-      return repository.findAllCourses();
-    }
-    return repository.findCoursesByNamePattern(coursePattern);
-  }
-
-  // 年齢が30代の生徒リスト
-  public List<Student> getStudentsIn30s() {
-    return repository.findStudentsIn30s();
-  }
-
-  // Javaコース受講者リスト
-  public List<StudentWithCourse> getStudentsInJavaCourse(String courseName) {
-    return repository.findStudentsInJavaCourse(courseName);
-  }
-
-  // 学生登録 + コース登録
-  @Transactional
-  public Student registerStudentWithCourses(Student student, List<StudentCourse> courses) {
-
-    repository.insertStudent(student);
-    int generatedStudentId = student.getId();
-
-    LocalDate today = LocalDate.now();
-
-    for (StudentCourse course : courses) {
-      course.setStudentId(generatedStudentId);
-      course.setCourseStartAt(today.toString());
-      course.setCourseEndAt(today.plusMonths(6).toString());
-      repository.insertStudentCourse(course);
-    }
-
-    return student;
-  }
-
-  // 受講生詳細取得
-  public StudentDetail findStudentDetail(int studentId) {
     Student student = repository.findStudentById(studentId);
     List<StudentCourse> courses = repository.findCoursesByStudentId(studentId);
+
+    return buildStudentDetail(student, courses);
+  }
+
+  /**
+   * StudentDetail生成共通処理
+   */
+  private StudentDetail buildStudentDetail(
+      Student student,
+      List<StudentCourse> courses) {
 
     StudentDetail detail = new StudentDetail();
     detail.setStudent(student);
     detail.setStudentCourses(courses);
+
     return detail;
   }
 
-  // 学生＋コース更新
+  /**
+   * 受講生登録
+   */
+  @Transactional
+  public StudentDetail registerStudentWithCourses(
+      Student student,
+      List<StudentCourse> courses) {
+
+    repository.insertStudent(student);
+
+    int studentId = student.getId();
+
+    LocalDate today = LocalDate.now();
+
+    for (StudentCourse course : courses) {
+
+      if (course.getCourseName() == null || course.getCourseName().isBlank()) {
+        continue;
+      }
+
+      course.setStudentId(studentId);
+      course.setCourseStartAt(today.toString());
+      course.setCourseEndAt(today.plusMonths(6).toString());
+
+      repository.insertStudentCourse(course);
+    }
+
+    List<StudentCourse> registeredCourses =
+        repository.findCoursesByStudentId(studentId);
+
+    return buildStudentDetail(student, registeredCourses);
+  }
+
+  /**
+   * 受講生更新
+   */
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
+
     repository.updateStudentInfo(studentDetail.getStudent());
+
+    if (studentDetail.getStudentCourses() == null) {
+      return;
+    }
 
     for (StudentCourse course : studentDetail.getStudentCourses()) {
       repository.updateStudentCourse(course);

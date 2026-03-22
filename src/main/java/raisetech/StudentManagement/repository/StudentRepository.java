@@ -7,147 +7,168 @@ import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.etc.StudentWithCourse;
 
+/**
+ * 受講生テーブルと受講生コース情報テーブルと紐づくRepositoryです
+ */
 @Mapper
 public interface StudentRepository {
 
+  /**
+   * 受講生の検索を行います
+   *
+   * @param id 受講生ID
+   * @return 受講生
+   */
   // ============================================================
   // 単体検索
   // ============================================================
 
   @Select("""
-            SELECT 
-                id,
-                full_name AS fullName,
-                furigana,
-                nickname,
-                region,
-                age,
-                gender,
-                remark,
-                is_deleted AS isDeleted
-            FROM students
-            WHERE id = #{id}
-            """)
+          SELECT 
+              id,
+              full_name AS fullName,
+              furigana,
+              nickname,
+              region,
+              age,
+              gender,
+              remark,
+              is_deleted AS isDeleted
+          FROM students
+          WHERE id = #{id}
+          """)
   Student findStudentById(int id);
 
-
   @Select("""
-            SELECT 
-                id,
-                student_id AS studentId,
-                course_name AS courseName,
-                course_start_at AS courseStartAt,
-                course_end_at AS courseEndAt
-            FROM students_courses
-            WHERE student_id = #{studentId}
-            """)
+          SELECT 
+              id,
+              student_id AS studentId,
+              course_name AS courseName,
+              course_start_at AS courseStartAt,
+              course_end_at AS courseEndAt
+          FROM students_courses
+          WHERE student_id = #{studentId}
+          """)
   List<StudentCourse> findCoursesByStudentId(int studentId);
 
 
 
+  /**
+   * 受講生の全件検索を行います
+   *
+   * @return 受講生一覧（全件）
+   */
   // ============================================================
   // students テーブル
   // ============================================================
 
   @Select("""
-            SELECT 
-                id,
-                full_name AS fullName,
-                furigana,
-                nickname,
-                region,
-                age,
-                gender,
-                remark,
-                is_deleted AS isDeleted
-            FROM students
-            WHERE is_deleted = false
-            """)
+          SELECT 
+              id,
+              full_name AS fullName,
+              furigana,
+              nickname,
+              region,
+              age,
+              gender,
+              remark,
+              is_deleted AS isDeleted
+          FROM students
+          WHERE is_deleted = false
+          """)
   List<Student> findAllStudents();
 
-
   @Select("""
-            SELECT 
-                id,
-                full_name AS fullName,
-                furigana,
-                nickname,
-                region,
-                age,
-                gender,
-                remark,
-                is_deleted AS isDeleted
-            FROM students
-            WHERE full_name REGEXP #{namePattern}
-            AND is_deleted = false
-            """)
+          SELECT 
+              id,
+              full_name AS fullName,
+              furigana,
+              nickname,
+              region,
+              age,
+              gender,
+              remark,
+              is_deleted AS isDeleted
+          FROM students
+          WHERE full_name REGEXP #{namePattern}
+          AND is_deleted = false
+          """)
   List<Student> findStudentsByNamePattern(String namePattern);
-
 
   // 30代の生徒
   @Select("""
-            SELECT 
-                id,
-                full_name AS fullName,
-                furigana,
-                nickname,
-                region,
-                age,
-                gender,
-                remark,
-                is_deleted AS isDeleted
-            FROM students
-            WHERE age BETWEEN 30 AND 39
-            AND is_deleted = false
-            """)
+          SELECT 
+              id,
+              full_name AS fullName,
+              furigana,
+              nickname,
+              region,
+              age,
+              gender,
+              remark,
+              is_deleted AS isDeleted
+          FROM students
+          WHERE age BETWEEN 30 AND 39
+          AND is_deleted = false
+          """)
   List<Student> findStudentsIn30s();
 
 
 
+  /**
+   * 受講生のコース情報の全件検索を行います
+   *
+   * @return 受講生のコース情報（全件）
+   */
   // ============================================================
   // students_courses テーブル
   // ============================================================
 
   @Select("""
-            SELECT
-                id,
-                student_id AS studentId,
-                course_name AS courseName,
-                course_start_at AS courseStartAt,
-                course_end_at AS courseEndAt
-            FROM students_courses
-            """)
+          SELECT
+              id,
+              student_id AS studentId,
+              course_name AS courseName,
+              course_start_at AS courseStartAt,
+              course_end_at AS courseEndAt
+          FROM students_courses
+          """)
   List<StudentCourse> findAllCourses();
 
-
   @Select("""
-            SELECT 
-                id,
-                student_id AS studentId,
-                course_name AS courseName,
-                course_start_at AS courseStartAt,
-                course_end_at AS courseEndAt
-            FROM students_courses
-            WHERE course_name REGEXP #{coursePattern}
-            """)
+          SELECT 
+              id,
+              student_id AS studentId,
+              course_name AS courseName,
+              course_start_at AS courseStartAt,
+              course_end_at AS courseEndAt
+          FROM students_courses
+          WHERE course_name REGEXP #{coursePattern}
+          """)
   List<StudentCourse> findCoursesByNamePattern(String coursePattern);
 
 
 
+  /**
+   * 指定したコースを受講している受講生を検索します
+   *
+   * @param courseName コース名
+   * @return コースを受講している受講生一覧
+   */
   // ============================================================
   // JOIN 検索
   // ============================================================
 
   @Select("""
-            SELECT 
-                s.id AS studentId,
-                s.full_name AS studentName,
-                s.age,
-                c.course_name AS courseName
-            FROM students s
-            INNER JOIN students_courses c ON s.id = c.student_id
-            WHERE c.course_name = #{courseName}
-            """)
+          SELECT 
+              s.id AS studentId,
+              s.full_name AS studentName,
+              s.age,
+              c.course_name AS courseName
+          FROM students s
+          INNER JOIN students_courses c ON s.id = c.student_id
+          WHERE c.course_name = #{courseName}
+          """)
   List<StudentWithCourse> findStudentsInJavaCourse(@Param("courseName") String courseName);
 
 
@@ -157,44 +178,42 @@ public interface StudentRepository {
   // ============================================================
 
   @Insert("""
-            INSERT INTO students (
-                full_name,
-                furigana,
-                nickname,
-                region,
-                age,
-                gender,
-                remark,
-                is_deleted
-            ) VALUES (
-                #{fullName},
-                #{furigana},
-                #{nickname},
-                #{region},
-                #{age},
-                #{gender},
-                #{remark},
-                false
-            )
-            """)
+          INSERT INTO students (
+              full_name,
+              furigana,
+              nickname,
+              region,
+              age,
+              gender,
+              remark,
+              is_deleted
+          ) VALUES (
+              #{fullName},
+              #{furigana},
+              #{nickname},
+              #{region},
+              #{age},
+              #{gender},
+              #{remark},
+              false
+          )
+          """)
   @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
   void insertStudent(Student student);
 
-
-
   @Insert("""
-            INSERT INTO students_courses (
-                student_id,
-                course_name,
-                course_start_at,
-                course_end_at
-            ) VALUES (
-                #{studentId},
-                #{courseName},
-                #{courseStartAt},
-                #{courseEndAt}
-            )
-            """)
+          INSERT INTO students_courses (
+              student_id,
+              course_name,
+              course_start_at,
+              course_end_at
+          ) VALUES (
+              #{studentId},
+              #{courseName},
+              #{courseStartAt},
+              #{courseEndAt}
+          )
+          """)
   @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
   void insertStudentCourse(StudentCourse course);
 
@@ -205,36 +224,35 @@ public interface StudentRepository {
   // ============================================================
 
   @Update("""
-            UPDATE students SET
-                full_name = #{fullName},
-                furigana = #{furigana},
-                nickname = #{nickname},
-                region = #{region},
-                age = #{age},
-                gender = #{gender},
-                remark = #{remark},
-                is_deleted = #{isDeleted}
-            WHERE id = #{id}
-            """)
+          UPDATE students SET
+              full_name = #{fullName},
+              furigana = #{furigana},
+              nickname = #{nickname},
+              region = #{region},
+              age = #{age},
+              gender = #{gender},
+              remark = #{remark},
+              is_deleted = #{isDeleted}
+          WHERE id = #{id}
+          """)
   void updateStudentInfo(Student student);
 
-
-
   @Update("""
-            UPDATE students_courses SET
-                course_name = #{courseName},
-                course_start_at = #{courseStartAt},
-                course_end_at = #{courseEndAt}
-            WHERE id = #{id}
-            """)
+          UPDATE students_courses SET
+              course_name = #{courseName},
+              course_start_at = #{courseStartAt},
+              course_end_at = #{courseEndAt}
+          WHERE id = #{id}
+          """)
   void updateStudentCourse(StudentCourse course);
 
 
 
   // ============================================================
-  // 削除処理（必要なら）
+  // 削除処理
   // ============================================================
 
   @Delete("DELETE FROM students_courses WHERE id = #{id}")
   void deleteStudentCourse(int id);
 }
+
