@@ -12,6 +12,10 @@ import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.service.StudentService;
 
+/**
+ * 受講生の画面操作（画面遷移・フォーム送信）を扱うコントローラークラス
+ * 主にThymeleafなどのテンプレートと連携する。
+ */
 @Controller
 public class StudentViewController {
 
@@ -22,7 +26,10 @@ public class StudentViewController {
   }
 
   /**
-   * 新規登録画面
+   * 新規登録画面を表示する
+   *
+   * @param model 画面にデータを渡すためのモデル
+   * @return 新規登録画面のテンプレート名
    */
   @GetMapping("/newStudent")
   public String newStudent(Model model) {
@@ -37,7 +44,10 @@ public class StudentViewController {
   }
 
   /**
-   * 登録処理
+   * 受講生の登録処理を行う
+   *
+   * @param studentDetail フォームから送信された受講生情報
+   * @return 一覧画面へリダイレクト
    */
   @PostMapping("/students/register")
   public String registerStudent(

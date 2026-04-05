@@ -10,22 +10,31 @@ import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 
+/**
+ *受講生情報と受講生コースを結合し
+ *受講生詳細情報（StudentDetail）へ変換するコンバーター
+ */
 @Component
 public class StudentConverter {
 
   /**
-   * Student + StudentCourse を StudentDetail に変換
+   * 受講生一覧と受講生コース一覧を紐付けて
+   * 受講生詳細一覧に変換する
+   *
+   * @param studentList  受講生一覧
+   * @param studentCourseList  受講生コース一覧
+   * @return 受講生詳細一覧
    */
   public List<StudentDetail> convertStudentDetails(
-      List<Student> students,
-      List<StudentCourse> studentCourses) {
+      List<Student> studentList,
+      List<StudentCourse> studentCourseList) {
 
     // studentIdごとにコースをまとめる
     Map<Integer, List<StudentCourse>> courseMap =
-        studentCourses.stream()
+        studentCourseList.stream()
             .collect(Collectors.groupingBy(StudentCourse::getStudentId));
 
-    return students.stream()
+    return studentList.stream()
         .map(student -> {
 
           StudentDetail detail = new StudentDetail();
