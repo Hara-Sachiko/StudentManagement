@@ -12,6 +12,10 @@ import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.repository.StudentRepository;
 
+/**
+ * 受講生に関するビジネスロジックを担うサービスクラス。
+ *  Repositoryから取得したデータを加工し、Controllerへ提供する
+ */
 @Service
 public class StudentService {
 
@@ -24,7 +28,10 @@ public class StudentService {
   }
 
   /**
-   * 受講生一覧取得
+   * 受受講生一覧を取得する。
+   *  受講生情報とコース情報を結合して返却する
+   *
+   *   @return 受講生詳細一覧
    */
   public List<StudentDetail> searchStudentList() {
 
@@ -35,7 +42,10 @@ public class StudentService {
   }
 
   /**
-   * 受講生詳細取得
+   * 指定した受講生の詳細情報を取得する
+   *
+   * @param studentId 受講生ID
+   *  @return 受講生詳細
    */
   public StudentDetail searchStudent(int studentId) {
 
@@ -47,6 +57,10 @@ public class StudentService {
 
   /**
    * StudentDetail生成共通処理
+   *
+   * @param student 受講生情報
+   * @param courses コース情報一覧
+   * @return 受講生詳細
    */
   private StudentDetail buildStudentDetail(
       Student student,
@@ -60,7 +74,12 @@ public class StudentService {
   }
 
   /**
-   * 受講生登録
+   * 受講生およびコース情報を登録する。
+   * トランザクション管理により、途中で失敗した場合は全てロールバックされる。
+   *
+   *  @param student 登録する受講生
+   *  @param courses 登録するコース一覧
+   *  @return 登録後の受講生詳細
    */
   @Transactional
   public StudentDetail registerStudentWithCourses(
@@ -69,31 +88,40 @@ public class StudentService {
 
     repository.insertStudent(student);
 
-    int studentId = student.getId();
+    Integer studentId = student.getId();
+
+    if (studentId == null || studentId == 0) {
+      throw new IllegalStateException("受講生IDの取得に失敗しました");
+    }
 
     LocalDate today = LocalDate.now();
 
-    for (StudentCourse course : courses) {
+    if (courses != null) {
+      for (StudentCourse course : courses) {
 
-      if (course.getCourseName() == null || course.getCourseName().isBlank()) {
-        continue;
+        if (course.getCourseName() == null || course.getCourseName().isBlank()) {
+          continue;
+        }
+
+        course.setStudentId(studentId);
+        course.setCourseStartAt(today.toString());
+        course.setCourseEndAt(today.plusMonths(6).toString());
+
+        repository.insertStudentCourse(course);
       }
-
-      course.setStudentId(studentId);
-      course.setCourseStartAt(today.toString());
-      course.setCourseEndAt(today.plusMonths(6).toString());
-
-      repository.insertStudentCourse(course);
     }
 
-    List<StudentCourse> registeredCourses =
-        repository.findCoursesByStudentId(studentId);
+      List<StudentCourse> registeredCourses =
+          repository.findCoursesByStudentId(studentId);
 
-    return buildStudentDetail(student, registeredCourses);
-  }
+      return buildStudentDetail(student, registeredCourses);
+    }
+
 
   /**
-   * 受講生更新
+   * 受講生情報およびコース情報を更新する
+   *
+   *  @param studentDetail 更新対象の受講生詳細
    */
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
@@ -105,6 +133,11 @@ public class StudentService {
     }
 
     for (StudentCourse course : studentDetail.getStudentCourses()) {
+
+      if (course.getId() == 0) {
+        throw new IllegalArgumentException("コースIDが未設定です");
+      }
+
       repository.updateStudentCourse(course);
     }
   }

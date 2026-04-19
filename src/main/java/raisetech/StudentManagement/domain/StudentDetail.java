@@ -9,6 +9,9 @@ import lombok.Setter;
 import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 
+/**
+ * 受講生の詳細情報
+ */
 @Getter
 @Setter
 @NoArgsConstructor
