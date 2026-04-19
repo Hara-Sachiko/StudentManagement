@@ -11,6 +11,7 @@ import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.repository.StudentRepository;
+import raisetech.StudentManagement.Exception.ResourceNotFoundException;
 
 /**
  * 受講生に関するビジネスロジックを担うサービスクラス。
@@ -50,6 +51,12 @@ public class StudentService {
   public StudentDetail searchStudent(int studentId) {
 
     Student student = repository.findStudentById(studentId);
+
+    if (student == null) {
+      throw new ResourceNotFoundException(
+          "指定されたIDの受講生が存在しません。ID: " + studentId);
+    }
+
     List<StudentCourse> courses = repository.findCoursesByStudentId(studentId);
 
     return buildStudentDetail(student, courses);
