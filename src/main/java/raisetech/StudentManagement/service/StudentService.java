@@ -11,6 +11,7 @@ import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.repository.StudentRepository;
+import raisetech.StudentManagement.Exception.ResourceNotFoundException;
 
 /**
  * 受講生に関するビジネスロジックを担うサービスクラス。
@@ -50,6 +51,12 @@ public class StudentService {
   public StudentDetail searchStudent(int studentId) {
 
     Student student = repository.findStudentById(studentId);
+
+    if (student == null) {
+      throw new ResourceNotFoundException(
+          "指定されたIDの受講生が存在しません。ID: " + studentId);
+    }
+
     List<StudentCourse> courses = repository.findCoursesByStudentId(studentId);
 
     return buildStudentDetail(student, courses);
@@ -91,7 +98,7 @@ public class StudentService {
     Integer studentId = student.getId();
 
     if (studentId == null || studentId == 0) {
-      throw new IllegalStateException("受講生IDの取得に失敗しました");
+      throw new IllegalStateException("ID採番に失敗しています（DBのAUTO_INCREMENT or MyBatis設定を確認）");
     }
 
     LocalDate today = LocalDate.now();
