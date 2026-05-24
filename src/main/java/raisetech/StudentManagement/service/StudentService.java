@@ -3,6 +3,8 @@ package raisetech.StudentManagement.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class StudentService {
 
   private final StudentRepository repository;
   private final StudentConverter converter;
+  private static final Logger log = LoggerFactory.getLogger(StudentService.class);
 
   public StudentService(StudentRepository repository, StudentConverter converter) {
     this.repository = repository;
@@ -69,6 +72,7 @@ public class StudentService {
    * @param courses コース情報一覧
    * @return 受講生詳細
    */
+
   private StudentDetail buildStudentDetail(
       Student student,
       List<StudentCourse> courses) {
@@ -133,19 +137,24 @@ public class StudentService {
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
 
+    if (studentDetail == null || studentDetail.getStudent() == null) {
+      throw new IllegalArgumentException("studentDetailが不正です");
+    }
+
     repository.updateStudentInfo(studentDetail.getStudent());
 
-    if (studentDetail.getStudentCourses() == null) {
+    List<StudentCourse> courses = studentDetail.getStudentCourses();
+    if (courses == null) {
       return;
     }
 
-    for (StudentCourse course : studentDetail.getStudentCourses()) {
+    for (StudentCourse course : courses) {
 
-      if (course.getId() == 0) {
-        throw new IllegalArgumentException("コースIDが未設定です");
+      if (course.getId() == null || course.getId() <= 0) {
+        throw new IllegalArgumentException("コースIDが不正です");
       }
 
       repository.updateStudentCourse(course);
     }
+    }
   }
-}

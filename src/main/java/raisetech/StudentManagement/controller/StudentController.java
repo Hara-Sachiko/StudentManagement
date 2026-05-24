@@ -5,14 +5,15 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.service.StudentService;
-import raisetech.StudentManagement.Exception.TestException;
-import java.util.ArrayList;
+
 
 /**
  * 受講生の検索や登録、更新などを行うREST APIとして受け付けるControllerです
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 public class StudentController {
 
   private final StudentService service;
+  private static final Logger log = LoggerFactory.getLogger(StudentController.class);
 
   public StudentController(StudentService service) {
     this.service = service;
@@ -35,19 +37,23 @@ public class StudentController {
    */
   @Operation(summary = "一覧検索", description = "受講生の一覧を検索します")
   @GetMapping
-  public List<StudentDetail> getAllStudents(){
-    return service.searchStudentList();
-  }
+  public ResponseEntity<List<StudentDetail>> getAllStudents() {
+    List<StudentDetail> result = service.searchStudentList();
+    return ResponseEntity.ok(result);
+    }
 
   /**
-   * 指定したIDの受講生詳細を取得する
+   * 受講生詳細を取得する
    *
    * @param id 受講生ID
    * @return 受講生詳細
    */
+  @Operation(summary = "詳細取得", description = "指定したIDの受講生を取得します")
   @GetMapping("/{id}")
-  public StudentDetail getStudent(@PathVariable @Positive int id) {
-    return service.searchStudent(id);
+  public ResponseEntity<StudentDetail> getStudent(
+      @PathVariable @Positive int id
+  ) {
+    return ResponseEntity.ok(service.searchStudent(id));
   }
 
   /**
@@ -56,15 +62,12 @@ public class StudentController {
    * @param studentDetail 受講生およびコース情報
    * @return 処理結果メッセージ
    */
+  @Operation(summary = "登録新規", description = "受講生とコース情報を新規登録します")
   @PostMapping
   public ResponseEntity<String> registerStudent(
       @RequestBody @Valid StudentDetail studentDetail
   ) {
-    System.out.println(studentDetail);
-
-    if (studentDetail.getStudent() == null) {
-      return ResponseEntity.badRequest().body("studentがnullです");
-    }
+    log.info("register request: {}", studentDetail);
 
     service.registerStudentWithCourses(
         studentDetail.getStudent(),
@@ -81,17 +84,17 @@ public class StudentController {
    * @param studentDetail 更新する受講生情報
    * @return 処理結果メッセージ
    */
+  @Operation(summary = "更新", description = "受講生情報を更新します")
   @PutMapping("/{id}")
   public ResponseEntity<String> updateStudent(
       @PathVariable int id,
       @RequestBody @Valid StudentDetail studentDetail
   ) {
 
-    if (studentDetail == null || studentDetail.getStudent() == null) {
-      return ResponseEntity.badRequest().body("studentがnullです");
-    }
+    log.info("update request id={}, body={}", id, studentDetail);
 
     studentDetail.getStudent().setId(id);
+
     service.updateStudent(studentDetail);
 
     return ResponseEntity.ok("更新処理が成功しました");

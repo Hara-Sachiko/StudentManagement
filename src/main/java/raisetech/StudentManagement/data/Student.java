@@ -15,7 +15,7 @@ import jakarta.validation.constraints.Min;
 @Setter
 public class Student {
 
-  private int id;
+  private Integer id;
 
   @NotBlank
   private String fullName;
