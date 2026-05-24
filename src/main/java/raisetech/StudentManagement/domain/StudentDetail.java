@@ -1,7 +1,6 @@
 package raisetech.StudentManagement.domain;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,15 +12,14 @@ import raisetech.StudentManagement.data.StudentCourse;
 /**
  * 受講生の詳細情報
  */
-@Schema(description = "受講生詳細")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentDetail {
 
-  private Student student;
+  private Student student = new Student();
 
-  private List<StudentCourse> studentCourses;
+  private List<StudentCourse> studentCourses = new ArrayList<>();
 
 }
