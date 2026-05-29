@@ -109,7 +109,7 @@ public interface StudentRepository {
    *
    * @param course 登録対象の受講生コース情報（IDは未設定であること）
    */
-    void insertStudentCourse(StudentCourse course);
+  void insertStudentCourse(StudentCourse course);
 
 
   // ============================================================

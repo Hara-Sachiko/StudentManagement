@@ -1,7 +1,7 @@
 package raisetech.StudentManagement.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.service.StudentService;
-import raisetech.StudentManagement.Exception.TestException;
 
 /**
  * 受講生の検索や登録、更新などを行うREST APIとして受け付けるControllerです
@@ -29,12 +28,11 @@ public class StudentController {
   /**
    * 受講生一覧を取得する
    *
-   * @return 受講生詳細の一覧
+   *  @return 受講生詳細の一覧
    */
   @GetMapping
-  public List<StudentDetail> getAllStudents() throws TestException {
-    throw new TestException(
-        "現在のこのAPIは利用できません。URLは「studentList」ではなく「students」を利用してください");
+  public List<StudentDetail> getAllStudents() {
+    return service.searchStudentList();
   }
 
   /**
@@ -44,7 +42,7 @@ public class StudentController {
    * @return 受講生詳細
    */
   @GetMapping("/{id}")
-  public StudentDetail getStudent(@PathVariable @Positive int id) {
+  public StudentDetail getStudent(@PathVariable @Size(min=1,max=3) int id) {
     return service.searchStudent(id);
   }
 
@@ -72,11 +70,11 @@ public class StudentController {
   }
 
   /**
-   * 受講生情報を更新する
+   *受講生情報を更新する
    *
-   * @param id            更新対象の受講生ID
-   * @param studentDetail 更新する受講生情報
-   * @return 処理結果メッセージ
+   *@param id 更新対象の受講生ID
+   *@param studentDetail 更新する受講生情報
+   *@return 処理結果メッセージ
    */
   @PutMapping("/{id}")
   public ResponseEntity<String> updateStudent(
