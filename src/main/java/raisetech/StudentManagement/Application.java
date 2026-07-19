@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.info.Info;
 
 @OpenAPIDefinition(info = @Info(title = "受講生管理システム"))
 @SpringBootApplication
-@MapperScan("raisetech.StudentManagement.repository") // Mapper をスキャン
 public class Application {
 
   public static void main(String[] args) {

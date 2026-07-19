@@ -1,7 +1,9 @@
 package raisetech.StudentManagement.Exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -16,7 +18,7 @@ public class GlobalExceptionHandler {
         .body(ex.getMessage());
   }
 
-  // 400
+  // 400（独自例外）
   @ExceptionHandler(TestException.class)
   public ResponseEntity<String> handleTestException(TestException ex) {
     return ResponseEntity
@@ -24,12 +26,31 @@ public class GlobalExceptionHandler {
         .body(ex.getMessage());
   }
 
-  // 保険
+  // 400（@RequestBody @Valid）
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<String> handleValidationException(
+      MethodArgumentNotValidException ex) {
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body("入力値が不正です");
+  }
+
+  // 400（@PathVariable や @RequestParam のバリデーション）
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<String> handleConstraintViolationException(
+      ConstraintViolationException ex) {
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ex.getMessage());
+  }
+
+  // 500
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleException(Exception ex) {
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body("サーバーエラーが発生しました");
-
   }
 }
