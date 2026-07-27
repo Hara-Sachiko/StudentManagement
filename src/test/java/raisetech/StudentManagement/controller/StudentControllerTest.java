@@ -24,6 +24,7 @@ import org.springframework.http.MediaType;
 import static org.mockito.ArgumentMatchers.any;
 
 import raisetech.StudentManagement.data.Student;
+import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.service.StudentService;
 
@@ -73,7 +74,7 @@ class StudentControllerTest {
         {
           "student":{
             "id":1,
-            "fullName":"江並浩二",
+            "fullName":"江並公史",
             "furigana":"エナミコウジ",
             "nickname":"コウジ",
             "region":"奈良県",
@@ -157,5 +158,34 @@ class StudentControllerTest {
         .containsOnly("氏名は漢字で入力してください");
   }
 
+  @Test
+  void 受講生コースで適切な値を入力した時に入力チェックに異常が発生しないこと(){
+    StudentCourse studentCourse = new StudentCourse();
+    studentCourse.setStudentId(1);
+    studentCourse.setCourseName("Javaコース");
+    studentCourse.setCourseStartAt("2026-07-19");
+    studentCourse.setCourseEndAt("2027-01-19");
+
+    Set<ConstraintViolation<StudentCourse>> violations = validator.validate(studentCourse);
+
+    assertThat(violations).isEmpty();
+
+  }
+
+  @Test
+  void コース名が空の場合は入力チェックに掛かること(){
+    StudentCourse studentCourse = new StudentCourse();
+    studentCourse.setStudentId(1);
+    studentCourse.setCourseName("");
+    studentCourse.setCourseStartAt("2026-07-19");
+    studentCourse.setCourseEndAt("2027-01-19");
+
+    Set<ConstraintViolation<StudentCourse>> violations = validator.validate(studentCourse);
+
+    assertThat(violations).hasSize(1);
+    assertThat(violations)
+        .extracting("message")
+        .containsOnly("コース名は必須です");
+  }
 
 }
