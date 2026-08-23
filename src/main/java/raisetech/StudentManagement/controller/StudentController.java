@@ -87,12 +87,17 @@ public class StudentController {
       StudentDetail studentDetail
   ) {
 
+    System.out.println("===== registerStudent START =====");
+    System.out.println("studentDetail = " + studentDetail);
+
     log.info("register request: {}", studentDetail);
 
     service.registerStudentWithCourses(
         studentDetail.getStudent(),
         studentDetail.getStudentCourses()
     );
+
+    System.out.println("===== registerStudent END =====");
 
     return ResponseEntity
         .status(201)

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="raisetech.StudentManagement.repository.StudentRepository">
+
+  <!-- ============================================================ -->
+  <!-- students テーブル -->
+  <!-- ============================================================ -->
 
   <!-- 受講生全件取得 -->
   <select id="findAllStudents"
@@ -36,20 +43,7 @@
     WHERE id = #{id}
   </select>
 
-  <!-- コース一覧取得-->
-  <select id="findCoursesByStudentId"
-    resultType="raisetech.StudentManagement.data.StudentCourse">
-    SELECT
-    id,
-    student_id AS studentId,
-    course_name AS courseName,
-    course_start_at AS courseStartAt,
-    course_end_at AS courseEndAt
-    FROM students_courses
-    WHERE student_id = #{studentId}
-  </select>
-
-  <!-- 名前の部分一致で受講生を検索-->
+  <!-- 名前の部分一致で受講生を検索 -->
   <select id="findStudentsByNamePattern"
     resultType="raisetech.StudentManagement.data.Student">
     SELECT
@@ -67,7 +61,7 @@
     AND is_deleted = false
   </select>
 
-  <!-- 30代生徒を検索-->
+  <!-- 30代の受講生を検索 -->
   <select id="findStudentsIn30s"
     resultType="raisetech.StudentManagement.data.Student">
     SELECT
@@ -85,7 +79,25 @@
     AND is_deleted = false
   </select>
 
-  <!-- 受講生のコース情報の全件検索-->
+  <!-- ============================================================ -->
+  <!-- students_courses テーブル -->
+  <!-- ============================================================ -->
+
+  <!-- 指定した受講生IDに紐づくコース一覧を取得 -->
+  <select id="findCoursesByStudentId"
+    resultType="raisetech.StudentManagement.data.StudentCourse">
+    SELECT
+    id,
+    student_id AS studentId,
+    course_name AS courseName,
+    course_start_at AS courseStartAt,
+    course_end_at AS courseEndAt
+    FROM students_courses
+    WHERE student_id = #{studentId}
+  </select>
+
+
+  <!-- 受講生のコース情報を全件取得 -->
   <select id="findAllCourses"
     resultType="raisetech.StudentManagement.data.StudentCourse">
     SELECT
@@ -97,7 +109,7 @@
     FROM students_courses
   </select>
 
-  <!-- コース名の部分一致で検索-->
+  <!-- コース名の部分一致で検索 -->
   <select id="findCoursesByNamePattern"
     resultType="raisetech.StudentManagement.data.StudentCourse">
     SELECT
@@ -110,7 +122,11 @@
     WHERE course_name LIKE CONCAT('%', #{coursePattern}, '%')
   </select>
 
-  <!-- JOIN 検索-->
+  <!-- ============================================================ -->
+  <!-- JOIN 検索 -->
+  <!-- ============================================================ -->
+
+  <!-- 指定したコースを受講している受講生を検索 -->
   <select id="findStudentsInJavaCourse"
     resultType="raisetech.StudentManagement.etc.StudentWithCourse">
     SELECT
@@ -119,12 +135,60 @@
     s.age,
     c.course_name AS courseName
     FROM students s
-    INNER JOIN students_courses c ON s.id = c.student_id
+    INNER JOIN students_courses c
+    ON s.id = c.student_id
     WHERE c.course_name = #{courseName}
   </select>
 
-  <!-- 受講生を新規登録-->
-  <insert id="insertStudent" useGeneratedKeys="true" keyProperty="id">
+  <!-- ============================================================ -->
+  <!-- CourseApplicationStatus -->
+  <!-- ============================================================ -->
+
+  <!-- 受講生コースIDに紐づく申込状況を取得 -->
+  <select id="findApplicationStatusByStudentCourseId"
+    resultType="raisetech.StudentManagement.data.CourseApplicationStatus">
+    SELECT
+    id,
+    student_course_id AS studentCourseId,
+    status
+    FROM course_application_statuses
+    WHERE student_course_id = #{studentCourseId}
+  </select>
+
+
+  <!-- 受講生IDに紐づく申込状況を取得 -->
+  <select id="findApplicationStatusesByStudentId"
+    resultType="raisetech.StudentManagement.data.CourseApplicationStatus">
+    SELECT
+    cas.id,
+    cas.student_course_id AS studentCourseId,
+    cas.status
+    FROM course_application_statuses cas
+    INNER JOIN students_courses sc
+    ON cas.student_course_id = sc.id
+    WHERE sc.student_id = #{studentId}
+  </select>
+
+
+  <!-- すべてのコース申込状況を取得 -->
+  <select id="findAllApplicationStatuses"
+    resultType="raisetech.StudentManagement.data.CourseApplicationStatus">
+    SELECT
+    id,
+    student_course_id AS studentCourseId,
+    status
+    FROM course_application_statuses
+  </select>
+
+
+  <!-- ============================================================ -->
+  <!-- 新規登録 -->
+  <!-- ============================================================ -->
+
+  <!-- 受講生を新規登録 -->
+  <insert id="insertStudent"
+    useGeneratedKeys="true"
+    keyProperty="id">
     INSERT INTO students (
     full_name,
     furigana,
@@ -134,7 +198,8 @@
     gender,
     remark,
     is_deleted
-    ) VALUES (
+    )
+    VALUES (
     #{fullName},
     #{furigana},
     #{nickname},
@@ -146,14 +211,18 @@
     )
   </insert>
 
-  <!-- コース登録-->
-  <insert id="insertStudentCourse" useGeneratedKeys="true" keyProperty="id">
+
+  <!-- 受講生コース情報を新規登録 -->
+  <insert id="insertStudentCourse"
+    useGeneratedKeys="true"
+    keyProperty="id">
     INSERT INTO students_courses (
     student_id,
     course_name,
     course_start_at,
     course_end_at
-    ) VALUES (
+    )
+    VALUES (
     #{studentId},
     #{courseName},
     #{courseStartAt},
@@ -161,9 +230,30 @@
     )
   </insert>
 
-  <!-- 受講生を更新処理-->
+
+  <!-- 申込状況を新規登録 -->
+  <insert id="insertApplicationStatus"
+    useGeneratedKeys="true"
+    keyProperty="id">
+    INSERT INTO course_application_statuses (
+    student_course_id,
+    status
+    )
+    VALUES (
+    #{studentCourseId},
+    #{status}
+    )
+  </insert>
+
+
+  <!-- ============================================================ -->
+  <!-- 更新処理 -->
+  <!-- ============================================================ -->
+
+  <!-- 受講生情報を更新 -->
   <update id="updateStudentInfo">
-    UPDATE students SET
+    UPDATE students
+    SET
     full_name = #{fullName},
     furigana = #{furigana},
     nickname = #{nickname},
@@ -175,19 +265,26 @@
     WHERE id = #{id}
   </update>
 
-  <!-- 受講生コース情報のコース名を更新-->
+
+  <!-- 受講生コース情報を更新 -->
   <update id="updateStudentCourse">
-    UPDATE students_courses SET
+    UPDATE students_courses
+    SET
     course_name = #{courseName},
     course_start_at = #{courseStartAt},
     course_end_at = #{courseEndAt}
     WHERE id = #{id}
   </update>
 
-  <!-- 受講生コース情報を物理削除-->
+
+  <!-- ============================================================ -->
+  <!-- 削除処理 -->
+  <!-- ============================================================ -->
+
+  <!-- 受講生コース情報を物理削除 -->
   <delete id="deleteStudentCourse">
-    DELETE FROM students_courses WHERE id = #{id}
+    DELETE FROM students_courses
+    WHERE id = #{id}
   </delete>
 
-  </mapper>
-
+</mapper>
