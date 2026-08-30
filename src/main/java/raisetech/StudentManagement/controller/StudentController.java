@@ -83,7 +83,6 @@ public class StudentController {
   @PostMapping
   public ResponseEntity<String> registerStudent(
       @RequestBody
-      @Valid
       StudentDetail studentDetail
   ) {
 
@@ -133,5 +132,27 @@ public class StudentController {
     service.updateStudent(studentDetail);
 
     return ResponseEntity.ok("更新処理が成功しました");
+  }
+
+  /**
+   * POSTリクエストの動作確認用
+   */
+  @PostMapping("/test")
+  public ResponseEntity<String> testPost() {
+
+    System.out.println("===== TEST POST START =====");
+
+    return ResponseEntity.ok("POSTテスト成功");
+  }
+
+  /**
+   * GETリクエストの動作確認用
+   */
+  @GetMapping("/test")
+  public ResponseEntity<String> testGet() {
+
+    System.out.println("===== TEST GET START =====");
+
+    return ResponseEntity.ok("GETテスト成功");
   }
 }
