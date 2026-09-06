@@ -40,6 +40,13 @@
     <td>
       <input type="checkbox" th:checked="${studentDetail.student.isDeleted}" />
     </td>
+
+    <td>
+      <span th:each="applicationStatus : ${studentDetail.applicationStatuses}"
+            th:text="${applicationStatus.status}">
+
+      </span>
+    </td>
   </tr>
   </tbody>
 </table>

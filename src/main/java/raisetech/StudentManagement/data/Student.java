@@ -18,7 +18,6 @@ import lombok.Setter;
 @Setter
 public class Student {
 
-  @NotNull
   @Positive
   @Schema(description = "受講生ID")
   private Integer id;

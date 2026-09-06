@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import raisetech.StudentManagement.data.CourseApplicationStatus;
 import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 
@@ -30,4 +31,8 @@ public class StudentDetail {
   @Valid
   @Schema(description = "受講生コース一覧")
   private List<StudentCourse> studentCourses = new ArrayList<>();
+
+  @Schema(description = "コース申込状況一覧")
+  private List<CourseApplicationStatus> applicationStatuses = new ArrayList<>();
+
 }

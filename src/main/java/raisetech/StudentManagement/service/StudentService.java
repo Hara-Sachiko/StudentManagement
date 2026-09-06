@@ -10,10 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import raisetech.StudentManagement.Exception.ResourceNotFoundException;
 import raisetech.StudentManagement.controller.converter.StudentConverter;
+import raisetech.StudentManagement.data.CourseApplicationStatus;
 import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
 import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.repository.StudentRepository;
+
 
 /**
  * 受講生に関するビジネスロジックを担うServiceです
@@ -44,10 +46,20 @@ public class StudentService {
 
     log.info("search student list");
 
-    List<Student> students = repository.findAllStudents();
-    List<StudentCourse> courses = repository.findAllCourses();
+    List<Student> students =
+        repository.findAllStudents();
 
-    return converter.convertStudentDetails(students, courses);
+    List<StudentCourse> courses =
+        repository.findAllCourses();
+
+    List<CourseApplicationStatus> applicationStatuses =
+        repository.findAllApplicationStatuses();
+
+    return converter.convertStudentDetails(
+        students,
+        courses,
+        applicationStatuses
+    );
   }
 
   /**
@@ -60,7 +72,8 @@ public class StudentService {
 
     log.info("search student id={}", studentId);
 
-    Student student = repository.findStudentById(studentId);
+    Student student =
+        repository.findStudentById(studentId);
 
     if (student == null) {
       throw new ResourceNotFoundException(
@@ -71,11 +84,21 @@ public class StudentService {
     List<StudentCourse> courses =
         repository.findCoursesByStudentId(studentId);
 
-    return buildStudentDetail(student, courses);
+    List<CourseApplicationStatus> applicationStatuses =
+        repository.findApplicationStatusesByStudentId(studentId);
+
+    return converter.convertStudentDetails(
+        List.of(student),
+        courses,
+        applicationStatuses
+    ).get(0);
   }
 
   /**
    * 受講生を新規登録する
+   *
+   * 受講生登録後、コースを登録し、
+   * コースごとに「仮申込」の申込状況を自動作成する。
    *
    * @param student 登録する受講生
    * @param courses 登録するコース一覧
@@ -89,6 +112,7 @@ public class StudentService {
 
     log.info("register student");
 
+    // 受講生を登録
     repository.insertStudent(student);
 
     Integer studentId = student.getId();
@@ -105,26 +129,59 @@ public class StudentService {
 
       for (StudentCourse course : courses) {
 
+        // コース名が空の場合は登録しない
         if (course.getCourseName() == null
             || course.getCourseName().isBlank()) {
           continue;
         }
 
+        // 受講生IDを設定
         course.setStudentId(studentId);
-        course.setCourseStartAt(today.toString());
+
+        // コース開始日を設定
+        course.setCourseStartAt(
+            today.toString()
+        );
+
+        // コース終了日を6か月後に設定
         course.setCourseEndAt(
             today.plusMonths(6).toString()
         );
 
+        // コースを登録
         repository.insertStudentCourse(course);
+
+        // コース登録後に「仮申込」を作成
+        CourseApplicationStatus applicationStatus =
+            new CourseApplicationStatus();
+
+        applicationStatus.setStudentCourseId(
+            course.getId()
+        );
+
+        applicationStatus.setStatus("仮申込");
+
+        repository.insertApplicationStatus(
+            applicationStatus
+        );
       }
     }
 
+    // 登録後のコースを取得
     List<StudentCourse> registeredCourses =
         repository.findCoursesByStudentId(studentId);
 
-    return buildStudentDetail(student, registeredCourses);
+    // 登録後の申込状況を取得
+    List<CourseApplicationStatus> registeredApplicationStatuses =
+        repository.findApplicationStatusesByStudentId(studentId);
+
+    return converter.convertStudentDetails(
+        List.of(student),
+        registeredCourses,
+        registeredApplicationStatuses
+    ).get(0);
   }
+
 
   /**
    * 受講生情報を更新する
@@ -153,12 +210,12 @@ public class StudentService {
         );
 
     if (student == null) {
-
       throw new ResourceNotFoundException(
           "更新対象の受講生が存在しません"
       );
     }
 
+    // 受講生情報を更新
     repository.updateStudentInfo(
         studentDetail.getStudent()
     );
@@ -170,6 +227,7 @@ public class StudentService {
       return;
     }
 
+    // コース情報を更新
     for (StudentCourse course : courses) {
 
       if (course.getId() == null
@@ -185,24 +243,5 @@ public class StudentService {
       );
     }
   }
-
-  /**
-   * 受講生詳細を生成する
-   *
-   * @param student 受講生情報
-   * @param courses コース情報一覧
-   * @return 受講生詳細
-   */
-  private StudentDetail buildStudentDetail(
-      Student student,
-      List<StudentCourse> courses
-  ) {
-
-    StudentDetail detail = new StudentDetail();
-
-    detail.setStudent(student);
-    detail.setStudentCourses(courses);
-
-    return detail;
-  }
 }
+
